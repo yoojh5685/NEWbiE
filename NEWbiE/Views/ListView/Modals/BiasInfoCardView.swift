@@ -102,7 +102,7 @@ struct BiasInfoCardView: View {
                     Spacer()
 
                     // 보수 언론사
-                    VStack(alignment: .leading, spacing: 0) {
+                    VStack(alignment: .trailing, spacing: 0) {
                         Text("보수 언론사")
                             .font(.custom("Pretendard-Bold", size: 16))
                             .foregroundColor(.red)
@@ -119,6 +119,7 @@ struct BiasInfoCardView: View {
                                     .lineSpacing(30 - 17)
                                     .kerning(-0.34)
                                     .frame(alignment: .leading)
+                                    .padding(.horizontal, 10)
                             }
                         }
                         .padding(8)

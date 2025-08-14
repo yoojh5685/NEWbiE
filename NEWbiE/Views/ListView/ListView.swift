@@ -6,6 +6,7 @@ struct ListView: View {
 
     var body: some View {
         ScrollView {
+            
             VStack(spacing: 0) {
                 ListDetailView(
                     articleTitle: "여기에는 띄어쓰기 포함 최대 30자, 최소는 58자라고 합시다",
