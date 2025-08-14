@@ -10,6 +10,7 @@ import SwiftUI
 @main
 struct NEWbiEApp: App {
     @StateObject private var navigationManager = NavigationManager()
+    @StateObject private var homeVM = HomeViewModel(service: MockFeedService()) // <- 주입할 VM
 
     var body: some Scene {
         WindowGroup {
@@ -31,6 +32,7 @@ struct NEWbiEApp: App {
                 }
             }
             .environmentObject(navigationManager)
+            .environmentObject(homeVM) // <- 여기서 homeViewModel 넣어주기
         }
     }
 }
