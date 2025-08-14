@@ -37,6 +37,7 @@ extension Color {
     static let customwhite = Color(hex: "#FFFFFF")
 
     static let blue = Color(hex: "#008AFF")
+    static let arrowgray = Color(hex: "#BDBDC1")
     static let blueCircle = Color(hex: "#42A8FF")
     static let red = Color(hex: "#FF4B41")
     static let redCircle = Color(hex: "#FF6960")
