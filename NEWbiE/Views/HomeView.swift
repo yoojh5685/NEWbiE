@@ -12,42 +12,42 @@ struct HomeView: View {
     @State private var selectedDate: Date = .now
     @StateObject private var viewModel = HomeViewModel(service: MockFeedService()) // 이거 실제 서버 할 땐 없애고
     
-//    @EnvironmentObject var viewModel: HomeViewModel   // <- 실제 서버 통신 할 때 추가
-
-
-//    init(ridingViewModel: HomeViewModel) {
-//        self.ridingViewModel = ridingViewModel
-//    }
+    //    @EnvironmentObject var viewModel: HomeViewModel   // <- 실제 서버 통신 할 때 추가
+    
+    
+    //    init(ridingViewModel: HomeViewModel) {
+    //        self.ridingViewModel = ridingViewModel
+    //    }
     
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 0) {
-                HeaderView(
-                    onTapSettings: { navigationManager.push(.edit) }
-                )
-
-                DateNavigatorView(
-                    date: $selectedDate,
-                    canGoPrev: viewModel.hasYesterday,
-                    canGoNext: viewModel.hasTomorrow,
-                    onPrev: { selectedDate = moveDay(-1, from: selectedDate) },
-                    onNext: { selectedDate = moveDay(+1, from: selectedDate) }
-                )
-                .padding(.vertical, 20)
-                .padding(.horizontal, 20)
-
-                VStack(spacing: 24) {
-                    ForEach(viewModel.items) { item in
-                        FeedCardView(
-                            item: item,
-                            onTap: { navigationManager.push(.list(item: "Item \(item.id)")) }
-                        )
-                        .padding(.horizontal, 16)
+        VStack(alignment: .leading, spacing: 0){
+                    HeaderView(
+                        onTapSettings: { navigationManager.push(.edit) }
+                    )
+                    .padding(.top, 8)
+                    
+                    DateNavigatorView(
+                        date: $selectedDate,
+                        canGoPrev: viewModel.hasYesterday,
+                        canGoNext: viewModel.hasTomorrow,
+                        onPrev: { selectedDate = moveDay(-1, from: selectedDate) },
+                        onNext: { selectedDate = moveDay(+1, from: selectedDate) }
+                    )
+                    .padding(.vertical, 20)
+                    .padding(.horizontal, 20)
+                    
+            ScrollView {
+                    VStack(spacing: 24) {
+                        ForEach(viewModel.items) { item in
+                            FeedCardView(
+                                item: item,
+                                onTap: { navigationManager.push(.list(item: "Item \(item.id)")) }
+                            )
+                            .padding(.horizontal, 16)
+                        }
                     }
-                }
-                .padding(.bottom, 32)
+                    .padding(.bottom, 32)
             }
-            .padding(.top, 8)
         }
         .background(Color(.systemBackground))
         .task { await viewModel.load(date: selectedDate) }
@@ -55,18 +55,18 @@ struct HomeView: View {
             Task { await viewModel.load(date: newValue) }
         }
         //   로딩 / 에러 옵션 표시
-//        .overlay {
-//            if viewModel.isLoading {
-//                ProgressView().scaleEffect(1.2)
-//            }
-//        }
-//        .alert("오류", isPresented: .constant(viewModel.errorMessage != nil), actions: {
-//            Button("확인", role: .cancel) { viewModel.errorMessage = nil }
-//        }, message: {
-//            Text(viewModel.errorMessage ?? "")
-//        })
+        //        .overlay {
+        //            if viewModel.isLoading {
+        //                ProgressView().scaleEffect(1.2)
+        //            }
+        //        }
+        //        .alert("오류", isPresented: .constant(viewModel.errorMessage != nil), actions: {
+        //            Button("확인", role: .cancel) { viewModel.errorMessage = nil }
+        //        }, message: {
+        //            Text(viewModel.errorMessage ?? "")
+        //        })
     }
-
+    
     private func moveDay(_ delta: Int, from base: Date) -> Date {
         Calendar.current.date(byAdding: .day, value: delta, to: base) ?? base
     }
@@ -75,16 +75,16 @@ struct HomeView: View {
 // MARK: - Header
 private struct HeaderView: View {
     var onTapSettings: () -> Void
-
+    
     var body: some View {
         HStack {
             Image("NEWbiE")
                 .resizable()
                 .scaledToFit()
                 .frame(height: 24)
-
+            
             Spacer()
-
+            
             Button(action: onTapSettings) {
                 Image(systemName: "gearshape")
                     .font(.system(size: 20))
@@ -105,7 +105,7 @@ private struct DateNavigatorView: View {
     
     var onPrev: () -> Void
     var onNext: () -> Void
-
+    
     var body: some View {
         HStack {
             CircleIconButton(
@@ -133,7 +133,7 @@ private struct DateNavigatorView: View {
             )
         }
     }
-
+    
     private func dateString(_ d: Date) -> String {
         let fmt = DateFormatter()
         fmt.locale = Locale(identifier: "ko_KR")
@@ -148,7 +148,7 @@ private struct CircleIconButton: View {
     let activeBG: Color
     let inactiveBG: Color
     let action: () -> Void
-
+    
     var body: some View {
         Button(action: action) {
             Image(systemName: systemName)
@@ -170,19 +170,19 @@ private struct CircleIconButton: View {
 private struct FeedCardView: View {
     let item: FeedItemModel
     var onTap: () -> Void
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(item.title)
                 .font(.headline)
                 .foregroundStyle(.primary)
                 .lineLimit(2)
-
+            
             Text(item.body)
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .lineLimit(3)
-
+            
             // 여기에 색 바 나중에 추가할게
             
         }
