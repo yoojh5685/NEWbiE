@@ -1,10 +1,3 @@
-//
-//  NEWbiEApp.swift
-//  NEWbiE
-//
-//  Created by 유재혁 on 8/5/25.
-//
-
 import SwiftUI
 
 @main
@@ -33,6 +26,7 @@ struct NEWbiEApp: App {
             }
             .environmentObject(navigationManager)
             .environmentObject(homeVM) // <- 여기서 homeViewModel 넣어주기
+//            BiasInfoCardView()
         }
     }
 }
