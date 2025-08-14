@@ -9,7 +9,7 @@ import Foundation
 import SwiftUI
 
 enum ViewType: Hashable {
-    case edit
+//    case edit
     case list(item: String)
 }
 
