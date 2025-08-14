@@ -12,7 +12,7 @@ struct ListDetailView: View {
     @State private var summaryTextHeight: CGFloat = 0
     
     @State private var showBrief = false // ✅ 모달 상태 추가
-        
+    
     @EnvironmentObject var navigationManager: NavigationManager
     
     var body: some View {
@@ -67,7 +67,7 @@ struct ListDetailView: View {
                             .fill(Color(hex: "#8D94A3"))
                             .opacity(0.3)
                             .frame(width: 3, height: summaryTextHeight)
-                            
+                        
                         
                         VStack(alignment: .leading, spacing: 12) {
                             HStack(spacing: 6) {
@@ -126,17 +126,17 @@ struct ListDetailView: View {
                             ViewHeightReader()
                         )
                     }
-//                    .border(Color.yellow)
+                    //                    .border(Color.yellow)
                     .frame(maxWidth: .infinity)
                     .onPreferenceChange(ViewHeightKey.self) { value in
                         summaryTextHeight = value
                     }
                     .background(Color.white)
                     .padding(.bottom, 30)
-//                    .border(Color.red)
+                    //                    .border(Color.red)
                     
                     Text(fullContent)
-                        .font(.custom("Pretendard", size: 17))
+                        .font(.pretendardRegular(size: 17))
                         .lineSpacing(13)
                         .kerning(-0.34)
                         .multilineTextAlignment(.leading)
@@ -150,7 +150,7 @@ struct ListDetailView: View {
         .sheet(isPresented: $showBrief) {
             ZStack {
                 Color.clear.ignoresSafeArea()
-
+                
                 GeometryReader { geo in
                     VStack(spacing: 0) {
                         Spacer(minLength: 0)
@@ -188,7 +188,8 @@ struct ListDetailView: View {
                 }
             }
         }
-    }}
+    }
+}
 
 
 // MARK: - ViewHeightKey
