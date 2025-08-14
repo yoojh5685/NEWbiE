@@ -21,13 +21,6 @@ struct EditView: View {
                 .font(.title)
                 .fontWeight(.semibold)
             
-            Button("로그아웃") {
-                navigationManager.logout()
-            }
-            .buttonStyle(.bordered)
-            .controlSize(.large)
-            .foregroundColor(.red)
-            
             Spacer()
         }
         .padding()
@@ -40,3 +33,11 @@ struct EditView: View {
     EditView()
         .environmentObject(NavigationManager())
 }
+
+
+//            Button("로그아웃") {
+//                navigationManager.logout()
+//            }
+//            .buttonStyle(.bordered)
+//            .controlSize(.large)
+//            .foregroundColor(.red)
