@@ -1,10 +1,3 @@
-//
-//  Font+CustomFont.swift
-//  Starter-SwiftUI
-//
-//  Created by 이유현 on 4/17/25.
-//
-
 import SwiftUI
 
 extension Font {
