@@ -33,16 +33,16 @@ struct HomeView: View {
                     onPrev: { selectedDate = moveDay(-1, from: selectedDate) },
                     onNext: { selectedDate = moveDay(+1, from: selectedDate) }
                 )
-                .padding(.vertical, 20)
-                .padding(.horizontal, 20)
+                .padding(.vertical, 29)
+                .padding(.horizontal, 45)
 
-                VStack(spacing: 24) {
+                VStack(spacing: 0) {
                     ForEach(viewModel.items) { item in
                         FeedCardView(
                             item: item,
                             onTap: { navigationManager.push(.list(item: "Item \(item.id)")) }
                         )
-                        .padding(.horizontal, 16)
+                        .padding(.horizontal, 0)
                     }
                 }
                 .padding(.bottom, 32)
@@ -152,9 +152,10 @@ private struct CircleIconButton: View {
     var body: some View {
         Button(action: action) {
             Image(systemName: systemName)
+                .font(.system(size: 10))
                 .font(.headline.weight(.semibold))
                 .foregroundColor(Color.white)
-                .frame(width: 34, height: 34)
+                .frame(width: 22, height: 22)
                 .background(
                     Circle().fill(enabled ? activeBG : inactiveBG)
                 )
