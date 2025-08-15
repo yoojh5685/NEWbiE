@@ -2,7 +2,7 @@ import SwiftUI
 
 struct BiasInfoCardView: View {
     var onConfirm: () -> Void = {}
-    
+
     // 비율 변수 (0.0~1.0 범위로 전달)
     var progressiveRatio: CGFloat = 0.71
     var conservativeRatio: CGFloat = 0.29
@@ -17,9 +17,35 @@ struct BiasInfoCardView: View {
                         .padding(.top, 68)
                         .padding(.bottom, 4)
 
-                    Text("이 사안은 진보측이 \(Int(progressiveRatio * 100))%로 많이 다뤘어요")
-                        .font(.custom("Pretendard-Bold", size: 18))
-                        .padding(.bottom, 14)
+                    // 진보/보수에 따라 색상 동적 적용된 문장
+                    let isProgLead = progressiveRatio >= conservativeRatio
+                    let leadLabel = isProgLead ? "진보" : "보수"
+                    let leadPercent = Int(round((isProgLead ? progressiveRatio : conservativeRatio) * 100))
+                    let leadColor: Color = isProgLead ? Color.blue : Color.red
+
+                    (
+                        Group {
+                            Text("이 사안은 ")
+                                .foregroundColor(Color(hex: "#32353B"))
+                            +
+                            Text(leadLabel)
+                                .foregroundColor(leadColor)
+                            +
+                            Text("측이 ")
+                                .foregroundColor(Color(hex: "#32353B"))
+                            +
+                            Text("\(leadPercent)%")
+                                .foregroundColor(leadColor)
+                            +
+                            Text("로 많이 다뤘어요")
+                                .foregroundColor(Color(hex: "#32353B"))
+                        }
+                        .font(.custom("Pretendard", size: 16))
+                        .fontWeight(.medium)
+                        .lineSpacing(9)
+                        .kerning(-0.32)
+                    )
+                    .padding(.bottom, 14)
                 }
                 .padding(.leading, 24)
 
@@ -32,7 +58,7 @@ struct BiasInfoCardView: View {
                     HStack(spacing: 0) {
                         // 진보(파랑)
                         ZStack {
-                            Rectangle().fill(Color(red: 0/255, green: 138/255, blue: 255/255))
+                            Rectangle().fill(Color.blue)
                             Text("\(Int(round(progressiveRatio * 100)))%")
                                 .font(.custom("Pretendard-Bold", size: 13))
                                 .foregroundColor(.white)
@@ -84,7 +110,7 @@ struct BiasInfoCardView: View {
                                 Text(name)
                                     .font(.custom("Pretendard", size: 17))
                                     .fontWeight(.regular)
-                                    .foregroundColor(Color(red: 0/255, green: 138/255, blue: 255/255))
+                                    .foregroundColor(Color.blue)
                                     .multilineTextAlignment(.center)
                                     .lineSpacing(30 - 17)
                                     .kerning(-0.34)
@@ -94,7 +120,7 @@ struct BiasInfoCardView: View {
                         .padding(8)
                         .background(
                             RoundedRectangle(cornerRadius: 8)
-                                .fill(Color(red: 0/255, green: 138/255, blue: 255/255).opacity(0.10))
+                                .fill(Color.blue.opacity(0.10))
                         )
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -114,7 +140,7 @@ struct BiasInfoCardView: View {
                                 Text(name)
                                     .font(.custom("Pretendard", size: 17))
                                     .fontWeight(.regular)
-                                    .foregroundColor(.red)
+                                    .foregroundColor(Color.red)
                                     .multilineTextAlignment(.center)
                                     .lineSpacing(30 - 17)
                                     .kerning(-0.34)

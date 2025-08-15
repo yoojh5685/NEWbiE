@@ -30,7 +30,6 @@ struct NEWbiEApp: App {
             }
             .environmentObject(navigationManager)
             .environmentObject(homeVM) // <- 여기서 homeViewModel 넣어주기
-//            BiasInfoCardView()
             .task {
                 // 1) delegate 지정 (포그라운드에서도 배너/사운드)
                 UNUserNotificationCenter.current().delegate = notificationHandler

@@ -11,7 +11,8 @@ struct ListDetailView: View {
     @State private var isSummaryExpanded = false
     @State private var summaryTextHeight: CGFloat = 0
     
-    @State private var showBrief = false // ✅ 모달 상태 추가
+    @State private var showBrief = false
+    @State private var isShowingShareSheet = false
     
     @EnvironmentObject var navigationManager: NavigationManager
     
@@ -22,17 +23,19 @@ struct ListDetailView: View {
                 Button(action: {
                     navigationManager.pop()
                 }) {
-                    Image(systemName: "chevron.left")
-                        .foregroundColor(.black)
+                    Image("arrow-left")
                 }
                 
                 Spacer()
                 
                 Button(action: {
-                    // 공유 기능 예정
+                    isShowingShareSheet = true
                 }) {
-                    Image(systemName: "square.and.arrow.up")
-                        .foregroundColor(.black)
+                    Image("share")
+                }
+                // 기본적인 공유 기능만 넣어둠(나중에 수정 필요)
+                .sheet(isPresented: $isShowingShareSheet) {
+                    ShareSheet(items: [articleTitle])
                 }
             }
             .background(Color.white)
@@ -135,12 +138,11 @@ struct ListDetailView: View {
                     .padding(.bottom, 30)
                     //                    .border(Color.red)
                     
-                    Text(fullContent)
+                    Text(fullContent.byCharWrapping)
                         .font(.pretendardRegular(size: 17))
                         .lineSpacing(13)
                         .kerning(-0.34)
                         .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
