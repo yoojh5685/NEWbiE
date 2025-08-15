@@ -61,13 +61,3 @@ struct AIBriefCardView: View {
     }
 }
 
-#Preview {
-    AIBriefCardView(
-        summaryParagraphs: [
-            "여기에 텍스트 박스를 넣어주세요 여기까지 들어감다",
-            "이런 형태로 적어주세요 모르면 물어봐주세요"
-        ],
-        onConfirm: {}
-    )
-    .background(Color.black.opacity(0.1))
-}

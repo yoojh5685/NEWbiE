@@ -27,6 +27,7 @@ struct NEWbiEApp: App {
             .environmentObject(navigationManager)
             .environmentObject(homeVM) // <- 여기서 homeViewModel 넣어주기
 //            BiasInfoCardView()
+//            TermExplanationCardView()
         }
     }
 }

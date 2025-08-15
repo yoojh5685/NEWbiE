@@ -105,7 +105,7 @@ struct PoliticalSummaryView: View {
     func summaryView(
         text: String
     ) -> some View {
-        Text(text)
+        Text(text.byCharWrapping)
             .font(.custom("Pretendard", size: 17).weight(.regular))
             .foregroundColor(Color(hex: "#202225"))
             .lineSpacing(13)

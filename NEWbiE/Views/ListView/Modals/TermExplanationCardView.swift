@@ -70,8 +70,3 @@ struct TermExplanationCardView: View {
         .padding(.horizontal, 10)
     }
 }
-
-#Preview {
-    TermExplanationCardView()
-        .background(Color.gray.opacity(0.1)) // 배경 확인용
-}

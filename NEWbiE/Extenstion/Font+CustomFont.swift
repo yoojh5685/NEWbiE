@@ -37,3 +37,10 @@ extension Font {
         .custom("Pretendard-Thin", size: size)
     }
 }
+
+// 줄바꿈을 위해 필요
+extension String {
+    var byCharWrapping: Self {
+        map(String.init).joined(separator: "\u{200B}")
+    }
+}
