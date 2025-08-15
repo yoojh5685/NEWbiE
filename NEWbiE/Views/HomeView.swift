@@ -10,6 +10,7 @@ import SwiftUI
 struct HomeView: View {
     @EnvironmentObject var navigationManager: NavigationManager
     @State private var selectedDate: Date = .now
+    @Environment(\.openURL) private var openURL // 설정 여는 코드
     @StateObject private var viewModel = HomeViewModel(service: MockFeedService()) // 이거 실제 서버 할 땐 없애고
     
     //    @EnvironmentObject var viewModel: HomeViewModel   // <- 실제 서버 통신 할 때 추가
@@ -22,7 +23,8 @@ struct HomeView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0){
                     HeaderView(
-                        onTapSettings: { navigationManager.push(.edit) }
+                        onTapSettings: {             openURL(URL(string: UIApplication.openSettingsURLString)!)
+                        }
                     )
                     .padding(.top, 20)
                     .padding(.horizontal, 20)
@@ -176,17 +178,16 @@ private struct FeedCardView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(item.title)
-                .font(.headline)
-                .foregroundStyle(.primary)
+                .font(.pretendardSemiBold(size: 16))
+                .foregroundColor(Color.text200)
                 .lineLimit(2)
                 .padding(.bottom, 8)
             
             Text(item.body)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .font(.pretendardRegular(size: 15))
+                .foregroundColor(Color.text200)
                 .lineLimit(3)
             
-//             여기에 색 바 나중에 추가할게
             BubbleBarView()
                 .padding(.top,19)
                 .padding(.bottom, 40)

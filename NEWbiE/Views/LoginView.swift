@@ -6,9 +6,12 @@
 //
 
 import SwiftUI
+import UserNotifications
 
 struct LoginView: View {
     @EnvironmentObject var navigationManager: NavigationManager
+    
+    @AppStorage("didAskNotificationPermission") private var didAskNoti = false
     
     var body: some View {
         VStack(spacing: 20) {

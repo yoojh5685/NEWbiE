@@ -42,5 +42,8 @@ extension Color {
     static let red = Color(hex: "#FF4B41")
     static let redCircle = Color(hex: "#FF6960")
     static let Violet = Color(hex: "#7A54E6")
+    
+    
+    static let text200 = Color(hex: "#32353B")
   
 }
