@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct AIBriefCardView: View {
-    var summaryParagraphs: [String]      // ✅ 기본값 제거, 반드시 주입
+    var background_summary: [String]      // ✅ 기본값 제거, 반드시 주입
     var onConfirm: () -> Void
 
     var body: some View {
@@ -27,10 +27,10 @@ struct AIBriefCardView: View {
 
             // bullet 영역
             VStack(alignment: .leading, spacing: 8) {
-                ForEach(summaryParagraphs.indices, id: \.self) { index in
+                ForEach(background_summary.indices, id: \.self) { index in
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
                         Text("•")
-                        Text(summaryParagraphs[index])
+                        Text(background_summary[index])
                     }
                     .padding(.horizontal, 24)
                 }

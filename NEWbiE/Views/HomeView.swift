@@ -168,7 +168,6 @@ private struct CircleIconButton: View {
     }
 }
 
-
 // MARK: - Card
 
 private struct FeedCardView: View {
@@ -197,16 +196,7 @@ private struct FeedCardView: View {
     }
 }
 
-
 #Preview {
     HomeView()
         .environmentObject(NavigationManager())
 }
-
-
-// 서버 통신 시
-//#Preview {
-//    HomeView()
-//        .environmentObject(NavigationManager())
-//        .environmentObject(HomeViewModel(service: MockFeedService()))
-//}
