@@ -15,14 +15,10 @@ struct LoginView: View {
     
     var body: some View {
         VStack(spacing: 20) {
-            Image(systemName: "person.circle")
-                .imageScale(.large)
-                .font(.system(size: 80))
+            Image("logo_v1")
+                .resizable()
+                .frame(width: 300, height: 300)
                 .foregroundStyle(.tint)
-            
-            Text("NEWbiE")
-                .font(.largeTitle)
-                .fontWeight(.bold)
             
             Button("로그인") {
                 navigationManager.login()
