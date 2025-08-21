@@ -1,9 +1,4 @@
-//
-//  FeedService.swift
-//  NEWbiE
-//
-//  Created by 유재혁 on 8/14/25.
-//
+// FeedService.swift
 
 import Foundation
 
@@ -12,34 +7,117 @@ protocol FeedService {
     func fetchFeeds(on date: Date) async throws -> [FeedItemModel]
 }
 
-// MARK: - Mock
-struct MockFeedService: FeedService {
-    func fetchFeeds(on date: Date) async throws -> [FeedItemModel] {
-        // 네트워크처럼 보이도록 살짝 딜레이
-        try await Task.sleep(nanoseconds: 250_000_000)
-        return [
-            FeedItemModel(id: 1,
-                     title: "여기에 몇 글자까지 들어갈까요 저도 궁금한데요 띄어쓰기 포함 최소 30자 최대 58자라고 한번 정해보겠습니다",
-                     body: "여기는 최소만 정해두고, 최대는 …으로 통일하겠습니다. 최소는 몇글자가 될까요 한번 적어볼게요. 정권 교체 시 공직사회 갈등은 반복돼요. 업무보고는 국정과제 수립의 핵심 절차…"),
-            FeedItemModel(id: 2,
-                     title: "두 번째 카드 제목 예시입니다. 길이가 살짝 달라도 잘 줄바꿈되게",
-                     body: "본문도 2~3줄로 잘리도록 lineLimit만 조절합니다. 실제 서버 데이터 형식과 최대한 비슷하게 만들어두면 교체가 쉬워요."),
-            FeedItemModel(id: 3,
-                     title: "세 번째 카드",
-                     body: "이건 테스트용 더미 텍스트입니다. 디자인 확인용으로만 사용합니다.")
-        ]
-    }
-}
-
-// MARK: - Live(향후 실제 서버 연결 시)
+// MARK: - Live(실서버)
 struct LiveFeedService: FeedService {
     let baseURL: URL
+    let detailService: DetailService   // ← 이미 쓰고 있는 상세 서비스 (LiveDetailService 등)
 
     func fetchFeeds(on date: Date) async throws -> [FeedItemModel] {
-        // TODO: 실제 엔드포인트에 맞게 구현
-        // 1) URLRequest 구성 (date 쿼리 포함)
-        // 2) URLSession.data(for:) 호출
-        // 3) JSONDecoder로 [FeedItem] 디코딩
-        return []
+        // 1) 날짜 포맷
+        let day = Self.dayString(from: date)  // "2025-08-17"
+
+        // 2) URL 구성: /api/contents/date/{day}
+        let url = baseURL
+            .appendingPathComponent("api")
+            .appendingPathComponent("contents")
+            .appendingPathComponent("date")
+            .appendingPathComponent(day)
+
+        var req = URLRequest(url: url)
+        req.httpMethod = "GET"
+        req.setValue("application/json", forHTTPHeaderField: "Accept")
+
+        // 3) 요청
+        let (data, resp) = try await URLSession.shared.data(for: req)
+        guard let http = resp as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
+            throw URLError(.badServerResponse)
+        }
+
+        // 4) id 리스트 파싱 (여러 포맷 방어)
+        let ids = try parseIDs(from: data)
+
+        // 5) 각 id로 상세를 동시에 불러와 FeedItemModel 생성
+        var items: [FeedItemModel] = []
+        items.reserveCapacity(ids.count)
+
+        try await withThrowingTaskGroup(of: FeedItemModel?.self) { group in
+            for id in ids {
+                group.addTask {
+                    do {
+                        let detail = try await detailService.fetchDetail(id: id)
+                        // 홈 카드에 쓸 title/body 결정: contentTitle + fullArticleSummary(또는 coreIssue)
+                        let title = detail.contentTitle
+                        let body  = (!detail.fullArticleSummary.isEmpty ? detail.fullArticleSummary
+                                     : detail.coreIssue)
+
+                        return FeedItemModel(
+                            id: id,
+                            title: title,
+                            body: body
+                        )
+                    } catch {
+                        // 개별 실패는 리스트에서 제외
+                        print("⚠️ detail fail for id \(id):", error)
+                        return nil
+                    }
+                }
+            }
+
+            for try await result in group {
+                if let item = result { items.append(item) }
+            }
+        }
+
+        // (선택) 정렬 규칙이 필요하면 여기서 정렬
+        return items
+    }
+
+    // MARK: helpers
+
+    private static func dayString(from date: Date) -> String {
+        let fmt = DateFormatter()
+        fmt.calendar = Calendar(identifier: .gregorian)
+        fmt.locale   = Locale(identifier: "ko_KR")
+        fmt.timeZone = TimeZone(identifier: "Asia/Seoul")
+        fmt.dateFormat = "yyyy-MM-dd"
+        return fmt.string(from: date)
+    }
+
+    /// 날짜 엔드포인트 응답을 유연하게 파싱
+    /// - 허용: ["id1","id2"...]  또는  [{"id":".."},{"_id":".."}...]
+    private func parseIDs(from data: Data) throws -> [String] {
+        let dec = JSONDecoder()
+
+        // 1) [String]
+        if let arr = try? dec.decode([String].self, from: data) {
+            return arr
+        }
+
+        // 2) [{id:".."}] or [{"_id":".."}]
+        struct Row: Decodable {
+            let id: String?
+            let _id: String?
+
+            // 다른 키 이름도 대비 가능하면 추가
+            // let contentId: String?
+        }
+        if let rows = try? dec.decode([Row].self, from: data) {
+            let ids = rows.compactMap { $0.id ?? $0._id }
+            if !ids.isEmpty { return ids }
+        }
+
+        // 3) { "items": [String] } / { "contents": [{...}] } 같은 래핑 객체 대응
+        struct WrapA: Decodable { let items: [String] }
+        if let w = try? dec.decode(WrapA.self, from: data) {
+            return w.items
+        }
+        struct WrapB: Decodable { let contents: [Row] }
+        if let w = try? dec.decode(WrapB.self, from: data) {
+            let ids = w.contents.compactMap { $0.id ?? $0._id }
+            if !ids.isEmpty { return ids }
+        }
+
+        // 파싱 실패
+        throw URLError(.cannotParseResponse)
     }
 }
