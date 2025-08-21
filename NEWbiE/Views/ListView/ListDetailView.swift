@@ -2,20 +2,24 @@ import SwiftUI
 
 struct ListDetailView: View {
     // MARK: - 서버에서 받아올 변수들
-    let articleTitle: String
+    let topic: String
     let date: String
     let background_summary: [String]
     let full_article_summary: String
+    let glossary: [GlossaryItem]
+    let mediaSummary: MediaSummary
+    let reportingVolumeCompare: VolumeCompare
     
     // MARK: - 상태 변수
     @State private var isSummaryExpanded = false
     @State private var summaryTextHeight: CGFloat = 0
-    
     @State private var showBrief = false
     @State private var isShowingShareSheet = false
-    
     @State private var showSummaryCard = false
     @State private var showFullSummary = false
+    @State private var currentTerm: GlossaryItem? = nil
+    @State private var showBiasInfo = false
+
     
     @EnvironmentObject var navigationManager: NavigationManager
     
@@ -38,7 +42,7 @@ struct ListDetailView: View {
                 }
                 // 기본적인 공유 기능만 넣어둠(나중에 수정 필요)
                 .sheet(isPresented: $isShowingShareSheet) {
-                    ShareSheet(items: [articleTitle])
+                    ShareSheet(items: [topic])
                 }
             }
             .background(Color.white)
@@ -49,7 +53,7 @@ struct ListDetailView: View {
                 VStack(alignment: .leading) {
                     // MARK: - 제목
                     VStack(alignment: .leading, spacing: 4) {
-                        Text(articleTitle)
+                        Text(topic)
                             .font(.pretendardBold(size: 26))
                             .foregroundColor(Color(hex: "#202225"))
                             .lineSpacing(10)
@@ -62,7 +66,11 @@ struct ListDetailView: View {
                             .kerning(-0.26)
                     }
                     // MARK: - 막대 바
-                        BubbleBarView()
+                    BubbleBarView()
+                        .contentShape(Rectangle())                 // 탭 영역 확장
+                        .onTapGesture { withAnimation(.none) {     // ✅ 연결
+                            showBiasInfo = true
+                        }}
                     
                     // MARK: - 요약 카드
                     if showSummaryCard {
@@ -86,13 +94,9 @@ struct ListDetailView: View {
                                         .lineSpacing(6)
                                         .kerning(-0.26)
                                     
-                                    Button(action: {
-                                        // 물음표 팝업
-                                    }) {
-                                        Image("question")
-                                            .resizable()
-                                            .frame(width: 13, height: 13)
-                                    }
+                                    Image("question")
+                                        .resizable()
+                                        .frame(width: 13, height: 13)
                                 }
                                 // 카드 전체 탭
                                 .onTapGesture {
@@ -103,27 +107,6 @@ struct ListDetailView: View {
                                 
                                 // 요약 내용
                                 summaryTextView
-                                
-                                // 더보기 버튼 (접기 기능 제거)
-                                if !isSummaryExpanded {
-                                    Button(action: {
-                                        isSummaryExpanded = true
-                                    }) {
-                                        HStack(spacing: 5) {
-                                            Text("요약 더 보기")
-                                                .font(.custom("Pretendard", size: 15))
-                                                .fontWeight(.semibold)
-                                                .kerning(-0.3)
-                                                .lineSpacing(0)
-                                                .foregroundColor(Color(hex: "#4C525C"))
-                                            
-                                            Image("arrow_down")
-                                                .resizable()
-                                                .frame(width: 12, height: 7)
-                                                .foregroundColor(Color(hex: "#4C525C"))
-                                        }
-                                    }
-                                }
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .background( // 높이 측정용 뷰
@@ -143,14 +126,25 @@ struct ListDetailView: View {
                     //                    .border(Color.red)
                     
                     if showFullSummary {
-                        Text(full_article_summary.byCharWrapping)
-                            .font(.pretendardRegular(size: 17))
-                            .lineSpacing(13)
-                            .kerning(-0.34)
-                            .multilineTextAlignment(.leading)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .opacity(showFullSummary ? 1 : 0)
-                            .offset(y: showFullSummary ? 0 : 20)
+                        GlossaryText(
+                            text: full_article_summary,
+                            glossary: glossary,
+                            debug: false,
+                            applyByCharWrapping: true
+                        ) { g in
+                            currentTerm = g
+                        }
+                        .font(.pretendardRegular(size: 17))
+                        .lineSpacing(13)
+                        .kerning(-0.34)
+                        .multilineTextAlignment(.leading)
+                        .font(.pretendardRegular(size: 17))
+                        .lineSpacing(13)
+                        .kerning(-0.34)
+                        .multilineTextAlignment(.leading)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .opacity(showFullSummary ? 1 : 0)
+                        .offset(y: showFullSummary ? 0 : 20)
                     }
                 }
             }
@@ -165,20 +159,69 @@ struct ListDetailView: View {
                     VStack(spacing: 0) {
                         Spacer(minLength: 0)
                         AIBriefCardView(
-                            background_summary: background_summary,
-                            onConfirm: { withAnimation(.none) { showBrief = false } }
+                            onConfirm: {
+                                withAnimation(.none) {
+                                    showBrief = false
+                                }
+                            }
                         )
-                        .padding(.bottom, -geo.safeAreaInsets.bottom) // ✅ 하단 겹치기
+                        .padding(.bottom, -geo.safeAreaInsets.bottom + 34) // ✅ 하단 겹치기
                     }
                     // 시트 전체 영역에 딱 맞춤 + 맨 아래 정렬
                     .frame(width: geo.size.width, height: geo.size.height, alignment: .bottom)
                 }
                 .ignoresSafeArea(edges: .bottom)                   // ✅ bottom safe area 무시
             }
-            .presentationDetents([.height(352)])                   // 고정 높이
+            .presentationDetents([.height(385)])                   // 고정 높이
             .presentationBackground(.clear)
             .presentationDragIndicator(.hidden)
         }
+        // ✅ 용어 모달
+        .sheet(item: $currentTerm) { g in
+                ZStack {
+                    Color.clear.ignoresSafeArea()
+                    GeometryReader { geo in
+                        VStack(spacing: 0) {
+                            Spacer(minLength: 0)
+                            TermExplanationCardView(
+                                term: g.term,
+                                definition: g.definition,
+                                onConfirm: { withAnimation(.none) { currentTerm = nil } }
+                                )
+                                .padding(.bottom, -geo.safeAreaInsets.bottom + 34)
+                            }
+                            .frame(width: geo.size.width, height: geo.size.height, alignment: .bottom)
+                        }
+                        .ignoresSafeArea(edges: .bottom)
+                    }
+                    .presentationDetents([.height(352)])
+                    .presentationBackground(.clear)
+                    .presentationDragIndicator(.hidden)
+                }
+        // ✅ BiasInfoCardView 모달 시트 (막대바 탭)
+        .sheet(isPresented: $showBiasInfo) {
+            ZStack {
+                Color.clear.ignoresSafeArea()
+                GeometryReader { geo in
+                    VStack(spacing: 0) {
+                        Spacer(minLength: 0)
+                        BiasInfoCardView(
+                            onConfirm: { withAnimation(.none) { showBiasInfo = false } },
+                            progressiveRatio: CGFloat(reportingVolumeCompare.progressive),
+                                    conservativeRatio: CGFloat(reportingVolumeCompare.conservative),
+                                    progressiveMedias: mediaSummary.progressive,
+                                    conservativeMedias: mediaSummary.conservative
+                                )
+                                .padding(.bottom, -geo.safeAreaInsets.bottom + 34)
+                            }
+                            .frame(width: geo.size.width, height: geo.size.height, alignment: .bottom)
+                        }
+                        .ignoresSafeArea(edges: .bottom)
+                    }
+                    .presentationDetents([.height(497)]) // 기존 BiasInfoCardView 높이
+                    .presentationBackground(.clear)
+                    .presentationDragIndicator(.hidden)
+                }
         .animation(nil, value: showBrief)
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
@@ -194,19 +237,55 @@ struct ListDetailView: View {
         }
     }
     
-    // MARK: - 요약 텍스트 뷰
+    // ListDetailView.swift (summaryTextView만 교체)
+
     var summaryTextView: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            ForEach(background_summary.indices, id: \.self) { index in
-                if isSummaryExpanded || index == 0 {
-                    Text(background_summary[index])
-                        .font(.custom("Pretendard", size: 17))
-                        .fontWeight(.medium)
-                        .foregroundColor(.primary)
-                        .lineSpacing(8)
-                        .kerning(-0.34)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .multilineTextAlignment(.leading)
+        // 1) 문단 분리
+        let paragraphs: [String] = background_summary
+            .flatMap { $0.splitIntoParagraphsByPeriod() }
+
+        // 2) 접힘 로직 유지
+        let collapsedCount = 2
+        let visible: [String] = isSummaryExpanded
+            ? paragraphs
+            : Array(paragraphs.prefix(collapsedCount))
+
+        // 3) ✅ 중복 제거: GlossaryText만 사용 (Text(...) 제거)
+        return VStack(alignment: .leading, spacing: 16) {
+            ForEach(Array(visible.enumerated()), id: \.offset) { _, para in
+                GlossaryText(
+                    text: para,
+                    glossary: glossary,
+                    debug: false,
+                    applyByCharWrapping: true,
+                    onTapTerm: { g in
+                        currentTerm = g
+                    }
+                )
+                .font(.custom("Pretendard", size: 17))
+                .fontWeight(.medium)
+                .foregroundColor(.primary)
+                .lineSpacing(8)
+                .kerning(-0.34)
+                .fixedSize(horizontal: false, vertical: true)
+                .multilineTextAlignment(.leading)
+            }
+            // 더보기 버튼 (그대로 유지)
+            if !isSummaryExpanded && paragraphs.count > collapsedCount {
+                Button {
+                    withAnimation(.easeInOut(duration: 0.2)) { isSummaryExpanded = true }
+                } label: {
+                    HStack(spacing: 5) {
+                        Text("요약 더 보기")
+                            .font(.custom("Pretendard", size: 15))
+                            .fontWeight(.semibold)
+                            .kerning(-0.3)
+                            .foregroundColor(Color(hex: "#4C525C"))
+                        Image("arrow_down")
+                            .resizable()
+                            .frame(width: 12, height: 7)
+                            .foregroundColor(Color(hex: "#4C525C"))
+                    }
                 }
             }
         }
@@ -229,5 +308,21 @@ struct ViewHeightReader: View {
             Color.clear
                 .preference(key: ViewHeightKey.self, value: geometry.size.height)
         }
+    }
+}
+
+// MARK: - Helpers
+private extension String {
+    /// "문장. 문장." → ["문장.", "문장."] (공백/개행 정리, 빈 조각 제거)
+    func splitIntoParagraphsByPeriod() -> [String] {
+        let trimmed = self.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return [] }
+
+        // '.' 기준으로 나누고 다시 '.' 붙여서 반환
+        return trimmed
+            .split(separator: ".", omittingEmptySubsequences: true)
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+            .map { $0 + "." }
     }
 }

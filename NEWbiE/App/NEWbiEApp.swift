@@ -4,37 +4,42 @@ import UserNotifications
 @main
 struct NEWbiEApp: App {
     @StateObject private var navigationManager = NavigationManager()
-    @StateObject private var homeVM = HomeViewModel(service: MockFeedService()) // <- 주입할 VM
     @StateObject private var notificationHandler = NotificationHandler()
 
-    @AppStorage("didAskNotificationPermission") private var didAskNoti = false  // ⭐️ 추가
-    
+    @AppStorage("didAskNotificationPermission") private var didAskNoti = false
+
+    @StateObject private var homeVM: HomeViewModel
+
+    init() {
+        // ✅ 로컬 변수로 생성 (self 캡쳐 없음)
+        let base = URL(string: "https://newsservice.shop")!
+        let liveDetailService = LiveDetailService(baseURL: base)          // DetailService 프로토콜 채택
+        let liveFeedService   = LiveFeedService(baseURL: base, detailService: liveDetailService)
+
+        _homeVM = StateObject(wrappedValue: HomeViewModel(service: liveFeedService))
+    }
+
     var body: some Scene {
         WindowGroup {
             NavigationStack(path: $navigationManager.path) {
                 ZStack {
                     if navigationManager.isLoggedIn {
-                        HomeView()
+                        HomeView()   // HomeView는 @EnvironmentObject var viewModel: HomeViewModel
                     } else {
                         LoginView()
                     }
                 }
                 .navigationDestination(for: ViewType.self) { viewType in
                     switch viewType {
-//                    case .edit:
-//                        EditView()
-                    case .list(let item):
-                        ListView(item: item)
+                    case .list(let id):
+                        ListView(id: id)
                     }
                 }
             }
             .environmentObject(navigationManager)
-            .environmentObject(homeVM) // <- 여기서 homeViewModel 넣어주기
+            .environmentObject(homeVM)
             .task {
-                // 1) delegate 지정 (포그라운드에서도 배너/사운드)
                 UNUserNotificationCenter.current().delegate = notificationHandler
-                
-                // 2) 최초 1회만 권한 요청 (로그인 여부 무관)
                 if !didAskNoti {
                     await requestNotificationPermissionIfNeeded()
                     didAskNoti = true

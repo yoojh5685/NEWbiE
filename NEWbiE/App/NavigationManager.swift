@@ -10,7 +10,7 @@ import SwiftUI
 
 enum ViewType: Hashable {
 //    case edit
-    case list(item: String)
+    case list(id: String)
 }
 
 final class NavigationManager: ObservableObject {

@@ -1,8 +1,11 @@
+// TermExplanationCardView.swift
 import SwiftUI
 
 struct TermExplanationCardView: View {
+    let term: String
+    let definition: String
     var onConfirm: () -> Void = {}
-    
+
     var body: some View {
         VStack(spacing: 0) {
             HStack {
@@ -14,8 +17,8 @@ struct TermExplanationCardView: View {
                         .lineSpacing(22 - 15)
                         .kerning(-0.3)
                         .padding(.bottom, 4)
-                    
-                    Text("상임위원장")
+
+                    Text(term)
                         .font(.custom("Pretendard-Bold", size: 24))
                         .foregroundColor(Color(hex: "#202225"))
                         .lineSpacing(32 - 24)
@@ -23,9 +26,9 @@ struct TermExplanationCardView: View {
                         .fixedSize(horizontal: false, vertical: true)
                         .layoutPriority(1)
                 }
-                
+
                 Spacer()
-                
+
                 Image("bigRobot")
                     .resizable()
                     .frame(width: 55, height: 55)
@@ -34,14 +37,18 @@ struct TermExplanationCardView: View {
             .padding(.horizontal, 24)
             .padding(.bottom, 37)
 
-            HStack(alignment: .top, spacing: 8) {
+            // 기존:
+            // HStack(alignment: .top, spacing: 8) {
+
+            HStack(alignment: .firstTextBaseline, spacing: 8) {
                 Text("•")
                     .font(.custom("Pretendard", size: 16))
-                    .fontWeight(.medium) // font-weight: 500
+                    .fontWeight(.medium)
                     .foregroundColor(Color(hex: "#202225"))
-                    .padding(.top, 2) // bullet을 첫 줄과 맞추기
+                    // .padding(.top, 2)  // ⛔️ 제거
+                    .baselineOffset(1)    // ↔︎ 필요 시 0~2 사이로 미세 조정
 
-                Text("국회 내 각 상임위원회를 이끄는 위원장으로, 상임위원회의 의사 진행과 운영을 총괄한다.")
+                Text(definition.byCharWrapping)
                     .font(.custom("Pretendard", size: 16))
                     .fontWeight(.medium)
                     .foregroundColor(Color(hex: "#202225"))

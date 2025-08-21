@@ -11,7 +11,7 @@ struct HomeView: View {
     @EnvironmentObject var navigationManager: NavigationManager
     @State private var selectedDate: Date = .now
     @Environment(\.openURL) private var openURL // 설정 여는 코드
-    @StateObject private var viewModel = HomeViewModel(service: MockFeedService()) // 이거 실제 서버 할 땐 없애고
+    @EnvironmentObject var viewModel: HomeViewModel 
     
     //    @EnvironmentObject var viewModel: HomeViewModel   // <- 실제 서버 통신 할 때 추가
     
@@ -29,13 +29,14 @@ struct HomeView: View {
                     .padding(.top, 20)
                     .padding(.horizontal, 20)
                     
-                    DateNavigatorView(
-                        date: $selectedDate,
-                        canGoPrev: viewModel.hasYesterday,
-                        canGoNext: viewModel.hasTomorrow,
-                        onPrev: { selectedDate = moveDay(-1, from: selectedDate) },
-                        onNext: { selectedDate = moveDay(+1, from: selectedDate) }
-                    )
+            // HomeView.swift (본문의 DateNavigatorView 부분만 교체)
+            DateNavigatorView(
+                date: $selectedDate,
+                canGoPrev: viewModel.hasYesterday(from: selectedDate),
+                canGoNext: viewModel.hasTomorrow(from: selectedDate),
+                onPrev: { selectedDate = moveDay(-1, from: selectedDate) },
+                onNext: { selectedDate = moveDay(+1, from: selectedDate) }
+            )
                     .padding(.top, 30)
                     .padding(.horizontal, 45)
                     .padding(.bottom, 23)
@@ -45,7 +46,7 @@ struct HomeView: View {
                         ForEach(viewModel.items) { item in
                             FeedCardView(
                                 item: item,
-                                onTap: { navigationManager.push(.list(item: "Item \(item.id)")) }
+                                onTap: { navigationManager.push(.list(id: item.id)) }
                             )
                             .padding(.horizontal, 20)
                         }
@@ -138,10 +139,21 @@ private struct DateNavigatorView: View {
     }
     
     private func dateString(_ d: Date) -> String {
+        let cal = Calendar(identifier: .gregorian)
         let fmt = DateFormatter()
         fmt.locale = Locale(identifier: "ko_KR")
-        fmt.dateFormat = "오늘, M월 d일"
-        return fmt.string(from: d)
+        fmt.timeZone = .current
+        fmt.dateFormat = "M월 d일"
+
+        let base = fmt.string(from: d)
+
+        if cal.isDateInToday(d) {
+            return "오늘, " + base
+        } else if cal.isDateInYesterday(d) {
+            return "어제, " + base
+        } else {
+            return base
+        }
     }
 }
 
