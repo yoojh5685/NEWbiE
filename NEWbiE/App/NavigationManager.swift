@@ -9,8 +9,8 @@ import Foundation
 import SwiftUI
 
 enum ViewType: Hashable {
-//    case edit
     case list(id: String)
+    case appSettings                // ✅ 추가
 }
 
 final class NavigationManager: ObservableObject {
