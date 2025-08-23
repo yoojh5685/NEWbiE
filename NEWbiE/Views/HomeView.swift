@@ -22,12 +22,13 @@ struct HomeView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0){
-                    HeaderView(
-                        onTapSettings: {             openURL(URL(string: UIApplication.openSettingsURLString)!)
-                        }
-                    )
-                    .padding(.top, 20)
-                    .padding(.horizontal, 20)
+            HeaderView(
+                onTapSettings: {
+                    navigationManager.push(.appSettings)   // ✅ 시스템 설정으로 바로 가지 않음
+                }
+            )
+            .padding(.top, 20)
+            .padding(.horizontal, 20)
                     
             // HomeView.swift (본문의 DateNavigatorView 부분만 교체)
             DateNavigatorView(

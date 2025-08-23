@@ -33,6 +33,8 @@ struct NEWbiEApp: App {
                     switch viewType {
                     case .list(let id):
                         ListView(id: id)
+                    case .appSettings:
+                        AppSettingsView()           // ✅ 아래에서 정의
                     }
                 }
             }
