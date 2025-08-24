@@ -52,9 +52,8 @@ struct AppSettingsView: View {
                     .padding(.top, 30)
             }
         }
-        // 🔑 여기 추가 → 화면 상단에서 네비게이션 바까지 30 띄움
         .safeAreaInset(edge: .top) {
-            Color.clear.frame(height: 70)
+            Color.clear.frame(height: 48)
         }
         .onAppear { Task { await refreshToggleFromSystem() } }
         .onChange(of: scenePhase) { phase in
@@ -76,7 +75,7 @@ struct AppSettingsView: View {
         VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 0) {
                 Text("설정")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(Color(UIColor.secondaryLabel))
                     .padding(.horizontal, 20)
                     .padding(.top, 8)
@@ -84,7 +83,7 @@ struct AppSettingsView: View {
 
                 HStack(spacing: 12) {
                     Text("알림설정")
-                        .font(.system(size: 16))
+                        .font(.system(size: 17))
                         .foregroundColor(.primary)
 
                     Spacer()
@@ -114,7 +113,7 @@ struct AppSettingsView: View {
                 .padding(.horizontal, 20)
 
                 Text("정보")
-                    .font(.system(size: 12, weight: .semibold))
+                    .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(Color(UIColor.secondaryLabel))
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
@@ -194,14 +193,14 @@ private struct SettingsRow: View {
     var body: some View {
         HStack {
             Text(title)
-                .font(.system(size: 16))
+                .font(.system(size: 17))
                 .foregroundColor(.primary)
             Spacer()
             Image(systemName: "chevron.right")
                 .foregroundColor(Color(UIColor.tertiaryLabel))
         }
         .padding(.horizontal, 16)
-        .frame(height: 56)
+        .frame(height: 44)
         .contentShape(Rectangle())
     }
 }
