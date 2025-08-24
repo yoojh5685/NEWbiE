@@ -24,17 +24,21 @@ struct NEWbiEApp: App {
             NavigationStack(path: $navigationManager.path) {
                 ZStack {
                     if navigationManager.isLoggedIn {
-                        HomeView()   // HomeView는 @EnvironmentObject var viewModel: HomeViewModel
+                        HomeView()
+                            .preferredColorScheme(.light)
                     } else {
                         LoginView()
+                            .preferredColorScheme(.light)
                     }
                 }
                 .navigationDestination(for: ViewType.self) { viewType in
                     switch viewType {
                     case .list(let id):
                         ListView(id: id)
+                            .preferredColorScheme(.light)
                     case .appSettings:
-                        AppSettingsView()           // ✅ 아래에서 정의
+                        AppSettingsView()
+                            .preferredColorScheme(.light)// ✅ 아래에서 정의
                     }
                 }
             }

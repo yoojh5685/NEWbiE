@@ -42,12 +42,19 @@ struct AppSettingsView: View {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: { dismiss() }) {
                     Image("arrow-left")
+                        .padding(.top, 30)
+                        .padding(.leading, 5)
                 }
             }
             ToolbarItem(placement: .principal) {
                 Text("설정")
                     .font(.system(size: 18, weight: .semibold))
+                    .padding(.top, 30)
             }
+        }
+        // 🔑 여기 추가 → 화면 상단에서 네비게이션 바까지 30 띄움
+        .safeAreaInset(edge: .top) {
+            Color.clear.frame(height: 70)
         }
         .onAppear { Task { await refreshToggleFromSystem() } }
         .onChange(of: scenePhase) { phase in
