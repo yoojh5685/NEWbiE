@@ -29,12 +29,13 @@ struct ListDetailView: View {
             ScrollView {
                 VStack(alignment: .leading) {
                     // MARK: - 제목
-                    VStack(alignment: .leading, spacing: 4) {
+                    VStack(alignment: .leading, spacing: 0) {
                         Text(topic)
                             .font(.pretendardBold(size: 26))
                             .foregroundColor(Color(hex: "#202225"))
                             .lineSpacing(10)
                             .kerning(0)
+                            .padding(.bottom, 8)
                         
                         Text(date)
                             .font(.pretendardRegular(size: 13))
@@ -49,6 +50,7 @@ struct ListDetailView: View {
                         .onTapGesture { withAnimation(.none) {
                             showBiasInfo = true
                         }}
+                        .padding(.top, 17)
 
                     // MARK: - 요약 카드
                     if showSummaryCard {
@@ -65,10 +67,11 @@ struct ListDetailView: View {
 
                             // 내용
                             VStack(alignment: .leading, spacing: 12) {
-                                HStack(spacing: 6) {
+                                HStack(spacing: 0) {
                                     Image("robot")
                                         .resizable()
                                         .frame(width: 16, height: 16)
+                                        .padding(.trailing, 6)
                                     
                                     Text("배경 요약")
                                         .font(.custom("Pretendard", size: 13))
@@ -76,6 +79,7 @@ struct ListDetailView: View {
                                         .underline(true, color: .primary)
                                         .lineSpacing(6)
                                         .kerning(-0.26)
+                                        .padding(.trailing, 8)
                                     
                                     Image("question")
                                         .resizable()
@@ -100,6 +104,7 @@ struct ListDetailView: View {
                         .background(Color.white)
                         .opacity(showSummaryCard ? 1 : 0)
                         .offset(y: showSummaryCard ? 0 : 20)
+                        .padding(.top, 18)
                         .padding(.bottom, 30)
                     }
                     // MARK: - 전체 요약

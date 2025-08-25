@@ -39,7 +39,7 @@ struct HomeView: View {
                 onNext: { selectedDate = moveDay(+1, from: selectedDate) }
             )
                     .padding(.top, 30)
-                    .padding(.horizontal, 45)
+                    .padding(.horizontal, 42)
                     .padding(.bottom, 23)
                     
             ScrollView {
@@ -114,11 +114,11 @@ private struct DateNavigatorView: View {
     var body: some View {
         HStack {
             CircleIconButton(
-                systemName: "chevron.left",
+                imageName: "arrow-left-b",
                 enabled: canGoPrev,
                 activeBG: Color(.blue),
                 inactiveBG: Color(.gray),
-                action: onPrev
+                action: onPrev, centerOffset: CGSize(width: -0.9, height: 0)
             )
             
             Spacer()
@@ -130,11 +130,11 @@ private struct DateNavigatorView: View {
             Spacer()
             
             CircleIconButton(
-                systemName: "chevron.right",
+                imageName: "arrow-right-b",
                 enabled: canGoNext,
                 activeBG: Color(.blue),
                 inactiveBG: Color(.gray),
-                action: onNext
+                action: onNext, centerOffset: CGSize(width: +0.9, height: 0)
             )
         }
     }
@@ -159,24 +159,35 @@ private struct DateNavigatorView: View {
 }
 
 private struct CircleIconButton: View {
-    let systemName: String
+    let imageName: String
     let enabled: Bool
     let activeBG: Color
     let inactiveBG: Color
     let action: () -> Void
-    
+    let centerOffset: CGSize   // 👈 화살표별 보정값
+
+    // 원/아이콘 공통 메트릭 (원 크기/아이콘 크기만 바꿔도 유지됨)
+    private let circleSize: CGFloat = 28
+    private let iconSize  = CGSize(width: 8.91, height: 15.27)
+
     var body: some View {
         Button(action: action) {
-            Image(systemName: systemName)
-                .font(.system(size: 10))
-                .font(.headline.weight(.semibold))
-                .foregroundColor(Color.white)
-                .frame(width: 22, height: 22)
-                .background(
-                    Circle().fill(enabled ? activeBG : inactiveBG)
-                )
+            ZStack {
+                Circle()
+                    .fill(enabled ? activeBG : inactiveBG)
+
+                Image(imageName)
+                    .resizable()
+                    .renderingMode(.template)     // 원본색 쓰려면 .original
+                    .scaledToFit()
+                    .frame(width: iconSize.width, height: iconSize.height)
+                    .foregroundColor(.white)
+                    .offset(centerOffset)         // ✅ 광학 중심 보정
+            }
+            .frame(width: circleSize, height: circleSize)
+            .contentShape(Circle())
         }
-        .disabled(!enabled)            // 탭 막기
+        .disabled(!enabled)
         .animation(.easeInOut(duration: 0.15), value: enabled)
     }
 }
@@ -189,15 +200,20 @@ private struct FeedCardView: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Text(item.title)
-                .font(.pretendardSemiBold(size: 16))
+            Text(item.title.byCharWrapping)
+                .font(.custom("Pretendard", size: 16))
+                .fontWeight(.semibold)
                 .foregroundColor(Color.text200)
+                .lineSpacing(24 - 16)
                 .lineLimit(2)
                 .padding(.bottom, 8)
             
-            Text(item.body)
-                .font(.pretendardRegular(size: 15))
+            Text(item.body.byCharWrapping)
+                .font(.custom("Pretendard", size: 15))
+                .fontWeight(.regular)
                 .foregroundColor(Color.text200)
+                .lineSpacing(22 - 15)
+                .kerning(-0.3)
                 .lineLimit(3)
             
             BubbleBarView()
