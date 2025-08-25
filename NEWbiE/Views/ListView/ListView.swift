@@ -49,7 +49,7 @@ struct ListView: View {
             }
             // ✅ 상단 바만큼 여유를 더 줘서 겹침 방지
             .padding(.horizontal, topBarHorizontalPadding)
-            .padding(.top, topBarHeight)   // 기존 30 대신 고정 바 높이 반영
+//            .padding(.top, topBarHeight)   // 기존 30 대신 고정 바 높이 반영
             .padding(.bottom, 20)
 
             // 이하 기존 정치 요약/기사 출처 섹션 동일
@@ -124,9 +124,9 @@ struct ListView: View {
             .frame(height: topBarHeight)
             .padding(.horizontal, topBarHorizontalPadding)
             .padding(.top, 30)
+            .padding(.bottom, 18)
             .contentShape(Rectangle())                // ← 상단바 전체 터치 영역
-            .background(.clear)
-            .shadow(color: Color.black.opacity(0.04), radius: 4, x: 0, y: 2)
+            .background(.white)
         }
         // ✅ 공유 시트 (상단 바의 버튼이 띄움)
         .sheet(isPresented: $isShowingShareSheet) {
