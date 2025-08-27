@@ -44,6 +44,30 @@ struct BubbleBarView: View {
                             logAvailability()
                         }
                     }
+                    .onAppear {                                     // ✅ [추가] 홈으로 돌아왔을 때도 꼭 재시작
+                        let width  = geometry.size.width
+                        let height = geometry.size.height
+
+                        showBubbles = false                         // 다시 숨겼다가
+                        barWidth = 0                                // 바도 리셋
+                        setup(width: width, height: height)         // 위치/배열 재생성
+
+                        withAnimation(.easeOut(duration: 0.6)) {
+                            barWidth = width                        // 바 애니메이션
+                        }
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                            showBubbles = true                      // 버블 표시
+                            logAvailability()
+                            // (버블 개별 onAppear에서 기존처럼 delay 후 페이드인 + 반복 애니 시작)
+                        }
+                    }
+                    .onDisappear {                                  // ✅ [추가] 떠날 때 상태 리셋
+                        showBubbles = false
+                        barWidth = 0
+                        // 다음 진입 시 onAppear 가드가 다시 먹도록 값 초기화
+                        scales = Array(repeating: 0.0, count: bubbles.count)
+                        opacities = Array(repeating: 0.0, count: bubbles.count)
+                    }
 
                 // 2) 버블
                 if showBubbles {
