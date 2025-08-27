@@ -24,13 +24,12 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 0){
             HeaderView(
                 onTapSettings: {
-                    navigationManager.push(.appSettings)   // ✅ 시스템 설정으로 바로 가지 않음
+                    navigationManager.push(.appSettings)
                 }
             )
             .padding(.top, 20)
             .padding(.horizontal, 20)
                     
-            // HomeView.swift (본문의 DateNavigatorView 부분만 교체)
             DateNavigatorView(
                 date: $selectedDate,
                 canGoPrev: viewModel.hasYesterday(from: selectedDate),
@@ -38,20 +37,20 @@ struct HomeView: View {
                 onPrev: { selectedDate = moveDay(-1, from: selectedDate) },
                 onNext: { selectedDate = moveDay(+1, from: selectedDate) }
             )
-                    .padding(.top, 30)
-                    .padding(.horizontal, 42)
-                    .padding(.bottom, 23)
+            .padding(.top, 30)
+            .padding(.horizontal, 42)
+            .padding(.bottom, 23)
                     
             ScrollView {
-                    VStack(alignment: .leading, spacing: 0) {
-                        ForEach(viewModel.items) { item in
-                            FeedCardView(
-                                item: item,
-                                onTap: { navigationManager.push(.list(id: item.id)) }
-                            )
-                            .padding(.horizontal, 20)
-                        }
-                    } // : VStack
+                VStack(alignment: .leading, spacing: 0) {
+                    ForEach(viewModel.items) { item in
+                        FeedCardView(
+                            item: item,
+                            onTap: { navigationManager.push(.list(id: item.id)) }
+                        )
+                        .padding(.horizontal, 20)
+                    }
+                }
             }
         }
         .background(Color(.systemBackground))
@@ -59,17 +58,15 @@ struct HomeView: View {
         .onChange(of: selectedDate) { newValue in
             Task { await viewModel.load(date: newValue) }
         }
-        //   로딩 / 에러 옵션 표시
-        //        .overlay {
-        //            if viewModel.isLoading {
-        //                ProgressView().scaleEffect(1.2)
-        //            }
-        //        }
-        //        .alert("오류", isPresented: .constant(viewModel.errorMessage != nil), actions: {
-        //            Button("확인", role: .cancel) { viewModel.errorMessage = nil }
-        //        }, message: {
-        //            Text(viewModel.errorMessage ?? "")
-        //        })
+//        // ✅ 로딩 메시지 오버레이 추가
+//        .overlay {
+//            if viewModel.isLoading {
+//                Text("기사를 불러오는 중입니다.")
+//                    .font(.system(size: 16, weight: .semibold))
+//                    .foregroundColor(.secondary)
+//                    .multilineTextAlignment(.center)
+//            }
+//        }
     }
     
     private func moveDay(_ delta: Int, from base: Date) -> Date {
@@ -215,17 +212,15 @@ private struct FeedCardView: View {
                 .lineSpacing(22 - 15)
                 .kerning(-0.3)
                 .lineLimit(3)
-            
-            BubbleBarView()
-                .padding(.top,19)
-                .padding(.bottom, 40)
-            
+
+            // ✅ 서버에서 받은 배열을 그대로 전달 (없으면 빈 배열)
+            BubbleBarView(
+                progressiveMedias: item.progressiveMedias ?? [],
+                conservativeMedias: item.conservativeMedias ?? []
+            )
+            .padding(.top, 19)
+            .padding(.bottom, 40)
         }
         .onTapGesture(perform: onTap)
     }
-}
-
-#Preview {
-    HomeView()
-        .environmentObject(NavigationManager())
 }

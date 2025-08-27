@@ -38,6 +38,7 @@ struct AppSettingsView: View {
         .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
+        .background(EnableInteractivePopGesture())
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: { dismiss() }) {
@@ -48,7 +49,7 @@ struct AppSettingsView: View {
             }
             ToolbarItem(placement: .principal) {
                 Text("설정")
-                    .font(.system(size: 18, weight: .semibold))
+                    .font(.system(size: 16, weight: .regular))
                     .padding(.top, 30)
             }
         }

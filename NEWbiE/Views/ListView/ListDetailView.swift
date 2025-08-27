@@ -45,7 +45,7 @@ struct ListDetailView: View {
                     }
 
                     // MARK: - 막대 바
-                    BubbleBarView()
+                    BubbleBarView(progressiveMedias: mediaSummary.progressive, conservativeMedias: mediaSummary.conservative)
                         .contentShape(Rectangle())
                         .onTapGesture { withAnimation(.none) {
                             showBiasInfo = true
@@ -307,3 +307,4 @@ private extension String {
             .map { $0 + "." }
     }
 }
+
