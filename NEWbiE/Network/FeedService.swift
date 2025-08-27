@@ -50,11 +50,20 @@ struct LiveFeedService: FeedService {
                         let body  = (!detail.fullArticleSummary.isEmpty ? detail.fullArticleSummary
                                      : detail.coreIssue)
 
-                        return FeedItemModel(
-                            id: id,
-                            title: title,
-                            body: body
-                        )
+                                        let prog = detail.mediaSummary.progressive
+                                        let cons = detail.mediaSummary.conservative
+
+                                        // (선택) 로그로 어떤 언론사가 들어왔는지 확인
+                                        print("🟦 progressive(\(prog.count)): \(prog.joined(separator: ", "))")
+                                        print("🟥 conservative(\(cons.count)): \(cons.joined(separator: ", "))")
+
+                                        return FeedItemModel(
+                                            id: id,
+                                            title: title,
+                                            body: body,
+                                            progressiveMedias: prog,
+                                            conservativeMedias: cons
+                                        )
                     } catch {
                         // 개별 실패는 리스트에서 제외
                         print("⚠️ detail fail for id \(id):", error)
