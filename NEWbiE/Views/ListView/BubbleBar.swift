@@ -18,6 +18,7 @@ struct BubbleBarView: View {
     var body: some View {
         GeometryReader { geometry in
             let width = geometry.size.width
+            let height = geometry.size.height
 
             ZStack {
                 // 1) 막대 바
@@ -28,7 +29,7 @@ struct BubbleBarView: View {
                     .frame(width: barWidth, height: barHeight)
                     .position(x: width / 2, y: barCenterY)
                     .onAppear {
-                        setup(width: width, height: geometry.size.height)
+                        setup(width: width, height: height)
                         withAnimation(.easeOut(duration: 0.6)) { barWidth = width }
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
                             showBubbles = true
@@ -36,35 +37,19 @@ struct BubbleBarView: View {
                         }
                     }
                     .onChange(of: width) { newWidth in
-                        // 리사이즈 시 재설정
-                        setup(width: newWidth, height: geometry.size.height)
+                        // 리사이즈(가로 ↔ 세로 전환) 시 다시 계산
+                        setup(width: newWidth, height: height)
                         showBubbles = false
+                        withAnimation(.easeOut(duration: 0.6)) { barWidth = newWidth }
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
                             showBubbles = true
                             logAvailability()
                         }
                     }
-                    .onAppear {                                     // ✅ [추가] 홈으로 돌아왔을 때도 꼭 재시작
-                        let width  = geometry.size.width
-                        let height = geometry.size.height
-
-                        showBubbles = false                         // 다시 숨겼다가
-                        barWidth = 0                                // 바도 리셋
-                        setup(width: width, height: height)         // 위치/배열 재생성
-
-                        withAnimation(.easeOut(duration: 0.6)) {
-                            barWidth = width                        // 바 애니메이션
-                        }
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                            showBubbles = true                      // 버블 표시
-                            logAvailability()
-                            // (버블 개별 onAppear에서 기존처럼 delay 후 페이드인 + 반복 애니 시작)
-                        }
-                    }
-                    .onDisappear {                                  // ✅ [추가] 떠날 때 상태 리셋
+                    .onDisappear {
+                        // 떠날 때 상태 리셋
                         showBubbles = false
                         barWidth = 0
-                        // 다음 진입 시 onAppear 가드가 다시 먹도록 값 초기화
                         scales = Array(repeating: 0.0, count: bubbles.count)
                         opacities = Array(repeating: 0.0, count: bubbles.count)
                     }
@@ -77,12 +62,12 @@ struct BubbleBarView: View {
 
                         Circle()
                             .fill(bubble.color)
-                            .frame(width: bubble.size, height: bubble.size) // base = 10
-                            .scaleEffect(min(scales[i], 1.0))               // ⬅️ 하드 캡
+                            .frame(width: bubble.size, height: bubble.size)
+                            .scaleEffect(min(scales[i], 1.0))
                             .opacity(opacities[i])
                             .position(x: bubble.positionX, y: bubbleY)
                             .onAppear {
-                                // ⬅️ 중복 애니메이션 방지 가드
+                                // 중복 방지
                                 guard opacities[i] == 0.0 && scales[i] == 0.0 else { return }
 
                                 let delay = Double.random(in: 0.15...0.70)
@@ -90,7 +75,7 @@ struct BubbleBarView: View {
                                     withAnimation(.easeInOut(duration: 0.60)) {
                                         opacities[i] = 1.0
                                     }
-                                    animateBubble(at: i) // 0 ↔︎ 1 반복
+                                    animateBubble(at: i)
                                 }
                             }
                     }
@@ -109,7 +94,7 @@ struct BubbleBarView: View {
             inHeight: height,
             spacingBetweenEdges: 12,
             portraitOffset: 63,
-            fixedSize: 10
+            baseSize: 10
         )
         // 리셋
         scales = Array(repeating: 0.0, count: bubbles.count)
@@ -149,24 +134,38 @@ extension Bubble {
         inHeight viewHeight: CGFloat,
         spacingBetweenEdges: CGFloat,
         portraitOffset: CGFloat,
-        fixedSize: CGFloat
+        baseSize: CGFloat
     ) -> [Bubble] {
         let centerX = viewWidth / 2
         let leftCount = progressiveMedias.count
         let rightCount = conservativeMedias.count
-        let centerSpacing = fixedSize + spacingBetweenEdges
+        let centerSpacing = baseSize + spacingBetweenEdges
 
         let isLandscape = viewWidth > viewHeight
+
+        // ✅ 버블 크기/간격 자동 스케일링
+        let maxCount = max(leftCount, rightCount)
+        let requiredWidth = CGFloat(maxCount) * centerSpacing
+        let halfAvail = (viewWidth / 2) - 20   // 좌우 여백 20 유지
+
+        var bubbleSize = baseSize
+        var spacing = spacingBetweenEdges
+        if requiredWidth > halfAvail {
+            let scale = halfAvail / requiredWidth
+            bubbleSize *= scale
+            spacing *= scale
+        }
+
         let adaptiveOffset: CGFloat = isLandscape ? viewWidth * 0.15 : portraitOffset
 
         var bubbles: [Bubble] = []
 
         // 왼쪽(진보/파랑)
         for i in 0..<leftCount {
-            let x = (centerX - adaptiveOffset) - CGFloat(i) * centerSpacing
+            let x = (centerX - adaptiveOffset) - CGFloat(i) * (bubbleSize + spacing)
             bubbles.append(Bubble(
                 positionX: x,
-                size: fixedSize,
+                size: bubbleSize,
                 duration: Double.random(in: 1.0...1.5),
                 color: Color.blue.opacity(0.7),
                 mediaName: progressiveMedias[i]
@@ -174,10 +173,10 @@ extension Bubble {
         }
         // 오른쪽(보수/빨강)
         for i in 0..<rightCount {
-            let x = (centerX + adaptiveOffset) + CGFloat(i) * centerSpacing
+            let x = (centerX + adaptiveOffset) + CGFloat(i) * (bubbleSize + spacing)
             bubbles.append(Bubble(
                 positionX: x,
-                size: fixedSize,
+                size: bubbleSize,
                 duration: Double.random(in: 1.2...1.8),
                 color: Color.red.opacity(0.7),
                 mediaName: conservativeMedias[i]
