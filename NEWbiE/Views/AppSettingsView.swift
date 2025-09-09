@@ -161,6 +161,8 @@ struct AppSettingsView: View {
 
                 VStack(spacing: 0) {
                     // 개인정보처리방침: 커스텀 백버튼/흰색 네비 포함한 래퍼 화면으로 이동
+                    SettingsRow(title: "서비스 이용약관")
+                    Divider().padding(.leading, 16)
                     NavigationLink(
                         destination: PolicyWebView(
                             urlString: "https://hguhimin.notion.site/2621653962958053b7a7ff318ea9dd0f?source=copy_link",
@@ -172,6 +174,7 @@ struct AppSettingsView: View {
 
                     Divider().padding(.leading, 16)
                     SettingsRow(title: "고객센터")
+                    Divider().padding(.leading, 16)
                 }
                 .background(Color(.systemBackground))
                 .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
