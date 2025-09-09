@@ -99,22 +99,41 @@ struct PoliticalSummaryView: View {
     
     
     func summaryView(text: String) -> some View {
+        // 공백 제거
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-        
+
+        // ⬇️ 비어 있거나 내용이 사실상 없는 경우(선택적으로 "N/A", "-" 같은 토큰도 처리)
+        let normalized = trimmed.lowercased()
+        if trimmed.isEmpty || normalized == "n/a" || normalized == "na" || trimmed == "-" {
+            let fallback = (selectedSide == .progressive_media_stance)
+            ? "이 사안에 대한 진보의 의견이 없어요"
+            : "이 사안에 대한 보수의 의견이 없어요"
+
+            return Text(fallback)
+                .font(.custom("Pretendard", size: 16).weight(.regular))
+                .foregroundColor(Color(hex: "#202225"))   // 보조 텍스트 톤
+                .lineSpacing(10)
+                .kerning(-0.2)
+                .multilineTextAlignment(.leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+
+        // 하이라이트 색상
+        let hlColor = selectedSide == .progressive_media_stance
+            ? Color(hex: "#008AFF")
+            : Color(hex: "#FF4B41")
+
+        // 첫 문장과 나머지 분리
         if let dot = trimmed.firstIndex(of: ".") {
             let end = trimmed.index(after: dot)
             let first = String(trimmed[..<end])
             let rest = String(trimmed[end...]).trimmingCharacters(in: .whitespaces)
 
-            let hlColor = selectedSide == .progressive_media_stance
-                ? Color(hex: "#008AFF")
-                : Color(hex: "#FF4B41")
-
             // 👉 첫 문장 (하이라이트 + bold)
             var attributed = AttributedString(first.byCharWrapping)
             attributed.foregroundColor = .white
             attributed.backgroundColor = hlColor
-            attributed.font = .custom("Pretendard", size: 17).bold()  // ✅ 첫 문장만 Bold
+            attributed.font = .custom("Pretendard", size: 17).bold()
 
             // 👉 나머지 문장 (일반 weight)
             var restAttr = AttributedString("\u{2009}" + rest.byCharWrapping)
@@ -128,10 +147,9 @@ struct PoliticalSummaryView: View {
                 .kerning(-0.34)                 // letter-spacing: -0.34px
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
-
         } else {
-            // 문장이 하나뿐인 경우
-            return Text(text.byCharWrapping)
+            // 문장이 하나뿐인 경우 (마침표가 없는 경우)
+            return Text(trimmed.byCharWrapping)
                 .font(.custom("Pretendard", size: 17).weight(.regular))
                 .foregroundColor(Color(hex: "#202225"))
                 .lineSpacing(13)
@@ -139,8 +157,7 @@ struct PoliticalSummaryView: View {
                 .multilineTextAlignment(.leading)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
-    }
-}
+    }}
 
 //#Preview {
 //    PoliticalSummaryView(

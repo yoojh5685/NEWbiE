@@ -1,10 +1,52 @@
 import SwiftUI
 import UserNotifications
+import WebKit   // ⬅️ 추가
+
+// MARK: - WKWebView Wrapper
+private struct WebView: UIViewRepresentable {
+    let url: URL
+
+    func makeUIView(context: Context) -> WKWebView { WKWebView() }
+
+    func updateUIView(_ uiView: WKWebView, context: Context) {
+        uiView.load(URLRequest(url: url))
+    }
+}
+
+// MARK: - 개인정보처리방침 화면 (백버튼/네비색 처리)
+private struct PolicyWebView: View {
+    @Environment(\..dismiss) private var dismiss
+
+    let urlString: String
+    let title: String
+
+    var body: some View {
+        WebView(url: URL(string: urlString)!)
+            .navigationTitle(title)
+            .navigationBarTitleDisplayMode(.inline)
+            .navigationBarBackButtonHidden(true)                    // 기본 백버튼 숨김
+            .toolbarBackground(Color.white, for: .navigationBar)    // 네비게이션바 흰색
+            .toolbarBackground(.visible, for: .navigationBar)
+            .toolbarColorScheme(.light, for: .navigationBar)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: { dismiss() }) {                 // ← AppSettingsView와 동일한 커스텀 백버튼
+                        Image("arrow-left")
+                            .padding(.leading, 5)
+                    }
+                }
+                ToolbarItem(placement: .principal) {
+                    Text(title)
+                        .font(.system(size: 16, weight: .regular))
+                }
+            }
+    }
+}
 
 struct AppSettingsView: View {
-    @Environment(\.dismiss) private var dismiss
-    @Environment(\.scenePhase) private var scenePhase
-    @Environment(\.verticalSizeClass) private var vSize
+    @Environment(\..dismiss) private var dismiss
+    @Environment(\..scenePhase) private var scenePhase
+    @Environment(\..verticalSizeClass) private var vSize
 
     @AppStorage("appNotificationEnabled") private var appNotificationEnabled: Bool = true
     @State private var isNotificationOn: Bool = false
@@ -43,14 +85,12 @@ struct AppSettingsView: View {
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: { dismiss() }) {
                     Image("arrow-left")
-                        .padding(.top, 30)
                         .padding(.leading, 5)
                 }
             }
             ToolbarItem(placement: .principal) {
                 Text("설정")
                     .font(.system(size: 16, weight: .regular))
-                    .padding(.top, 30)
             }
         }
         .safeAreaInset(edge: .top) {
@@ -101,7 +141,7 @@ struct AppSettingsView: View {
                                 Task { await ensureSystemEnabledAndSchedule() }
                             } else {
                                 appNotificationEnabled = false
-                                cancelDailyReminder()
+                                cancelDailyReminders()   // ⬅️ 아침/저녁 모두 취소
                                 showGoToSettingsAlert = true
                             }
                         }
@@ -120,11 +160,16 @@ struct AppSettingsView: View {
                     .padding(.top, 20)
 
                 VStack(spacing: 0) {
-                    SettingsRow(title: "업데이트 안내")
-                    Divider().padding(.leading, 16)
-                    SettingsRow(title: "서비스 이용약관")
-                    Divider().padding(.leading, 16)
-                    SettingsRow(title: "개인정보처리방침")
+                    // 개인정보처리방침: 커스텀 백버튼/흰색 네비 포함한 래퍼 화면으로 이동
+                    NavigationLink(
+                        destination: PolicyWebView(
+                            urlString: "https://hguhimin.notion.site/2621653962958053b7a7ff318ea9dd0f?source=copy_link",
+                            title: "개인정보처리방침"
+                        )
+                    ) {
+                        SettingsRow(title: "개인정보처리방침")
+                    }
+
                     Divider().padding(.leading, 16)
                     SettingsRow(title: "고객센터")
                 }
@@ -144,23 +189,28 @@ struct AppSettingsView: View {
         await MainActor.run { self.isNotificationOn = (sysOn && appNotificationEnabled) }
     }
 
+    /// 시스템 권한 상태에 맞춰 NEWbiE 아침(08:00)/저녁(18:00) 알림을 스케줄링
     private func ensureSystemEnabledAndSchedule() async {
         let center = UNUserNotificationCenter.current()
         let settings = await center.notificationSettings()
 
         switch settings.authorizationStatus {
         case .authorized, .provisional, .ephemeral:
-            scheduleDailyReminder(hour: 9, minute: 0)
+            await scheduleMorningAndEveningReminders()   // ⬅️ 변경: 9시 단일 → 아침/저녁 2개
             await refreshToggleFromSystem()
         case .notDetermined:
             let granted = (try? await center.requestAuthorization(options: [.alert, .sound, .badge])) ?? false
-            if granted { scheduleDailyReminder(hour: 9, minute: 0) }
-            else { await MainActor.run { self.appNotificationEnabled = false } }
+            if granted {
+                await scheduleMorningAndEveningReminders()
+            } else {
+                await MainActor.run { self.appNotificationEnabled = false }
+            }
             await refreshToggleFromSystem()
         case .denied:
             openSystemNotificationSettings()
             await refreshToggleFromSystem()
-        @unknown default: await refreshToggleFromSystem()
+        @unknown default:
+            await refreshToggleFromSystem()
         }
     }
 
@@ -183,9 +233,13 @@ struct AppSettingsView: View {
         }
     }
 
-    private func cancelDailyReminder() {
+    /// 기존 대기 알림(아침/저녁) 모두 취소
+    private func cancelDailyReminders() {
         UNUserNotificationCenter.current()
-            .removePendingNotificationRequests(withIdentifiers: ["daily.reminder"])
+            .removePendingNotificationRequests(withIdentifiers: [
+                "reminder.morning",   // NotificationFunctions.swift의 ID와 동일해야 함
+                "reminder.evening"
+            ])
     }
 }
 
