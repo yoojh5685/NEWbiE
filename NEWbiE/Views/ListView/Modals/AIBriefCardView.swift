@@ -4,10 +4,10 @@ struct AIBriefCardView: View {
     var onConfirm: () -> Void = {}
 
     // 🔒 고정 텍스트
-    private let titleText = "AI로 배경을\n요약했어요"
+    private let titleText = "AI로 배경을 요약했어요"
     private let bullets = [
-        "빠른 정보 파악을 돕기 위해 기사를 요약했어요",
-        "기술 특성상 본문의 주요 내용이 제외되거나 사실과 다를 수 있어요. 전체 맥락을 이해하기 위해 기사 본문 전체 보기를 권장해요"
+        "해당 이슈를 이해하는 데 도움을 주는 과거 사건이나 정보를 정리했어요.",
+        "현재 베타 버전으로 아직 신뢰도가 다소 부족할 수 있어요. 기사 본문 요약을 꼭 함께 읽길 권장해요."
     ]
 
     var body: some View {

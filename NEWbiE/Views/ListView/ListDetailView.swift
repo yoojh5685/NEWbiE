@@ -258,7 +258,7 @@ struct ListDetailView: View {
                     withAnimation(.easeInOut(duration: 0.2)) { isSummaryExpanded = true }
                 } label: {
                     HStack(spacing: 5) {
-                        Text("요약 더 보기")
+                        Text("배경 요약 더보기")
                             .font(.custom("Pretendard", size: 15))
                             .fontWeight(.semibold)
                             .kerning(-0.3)

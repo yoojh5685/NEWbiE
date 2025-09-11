@@ -18,7 +18,7 @@ struct BiasInfoCardView: View {
         let card = VStack(spacing: 0) {
             VStack(alignment: .leading, spacing: 0) {
                 VStack(alignment: .leading) {
-                    Text("편향도 설명")
+                    Text("보도량 비교")
                         .font(.custom("Pretendard", size: 13))
                         .foregroundColor(.gray)
                         .padding(.top, 68)
@@ -82,7 +82,7 @@ struct BiasInfoCardView: View {
                         .fontWeight(.medium)
                         .foregroundColor(Color(hex: "#32353B"))
 
-                    Text("현재 출처 기사는 아래와 같아요")
+                    Text("해당 기사의 출처는 아래와 같아요.")
                         .font(.custom("Pretendard", size: 16))
                         .fontWeight(.medium)
                         .lineSpacing(25 - 16)
